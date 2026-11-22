@@ -1,0 +1,40 @@
+name: Generate Signing Key - Gemini TTS
+
+on:
+  workflow_dispatch:
+    inputs:
+      STORE_PASSWORD:
+        description: 'Store Password likho, yaad rakhna'
+        required: true
+        default: 'Gemini1234'
+      KEY_PASSWORD:
+        description: 'Key Password likho'
+        required: true
+        default: 'Gemini1234'
+
+jobs:
+  generate-key:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Keystore
+        run: |
+          keytool -genkeypair -v \
+            -keystore gemini-release.keystore \
+            -alias gemini-key \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass ${{ inputs.STORE_PASSWORD }} \
+            -keypass ${{ inputs.KEY_PASSWORD }} \
+            -dname "CN=Google Gemini, OU=TTS, O=Gemini App, L=Faisalabad, ST=Punjab, C=PK"
+
+      - name: Show Base64 - Isko Copy Karna Hai
+        run: |
+          echo "====== BASE64 START ======"
+          base64 -w 0 gemini-release.keystore
+          echo ""
+          echo "====== BASE64 END ======"
+
+      - name: Upload Keystore File
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-release-keystore
+          path: gemini-release.keystore
